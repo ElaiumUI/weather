@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Elaium Weather - Frutiger Aero Real-Time Weather</title>
+    <link rel="stylesheet" type="text/css" href="style.css">
+</head>
+<body>
+
+  <!-- Background Floating Glass Bubbles -->
+  <div class="bg-bubbles" id="bubbleContainer"></div>
+
+  <header>
+    <div class="brand" onclick="fetchGeoLocation()">
+      <div class="brand-orb">🌤</div>
+      <span>Elaium Weather</span>
+    </div>
+
+    <div class="nav-actions">
+      <!-- Search Input -->
+      <div class="search-box-wrapper">
+        <span class="search-icon">🔍</span>
+        <input type="text" id="searchInput" class="search-input" placeholder="Buscar cidade..." autocomplete="off" oninput="handleSearchInput(this.value)">
+        <div class="search-suggestions" id="searchSuggestions"></div>
+      </div>
+
+      <!-- GPS Button -->
+      <button class="elaium-btn" onclick="fetchGeoLocation()">
+        <span>📍</span> <span data-i18n="btnGps">Meu Local</span>
+      </button>
+
+      <!-- Unit Switcher -->
+      <div class="pill-selector">
+        <button class="pill-btn active" id="unitC" onclick="setUnit('C')">°C</button>
+        <button class="pill-btn" id="unitF" onclick="setUnit('F')">°F</button>
+      </div>
+
+      <!-- Language Selector -->
+      <div class="pill-selector">
+        <button class="pill-btn active" id="langPt" onclick="setLanguage('pt')">PT</button>
+        <button class="pill-btn" id="langEn" onclick="setLanguage('en')">EN</button>
+        <button class="pill-btn" id="langEs" onclick="setLanguage('es')">ES</button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Container -->
+  <div class="container">
+
+    <!-- Status Banner -->
+    <div class="status-banner" id="statusBanner">
+      <span id="statusText">🌐 Localizando GPS em tempo real...</span>
+      <button class="elaium-btn" style="padding: 2px 10px; font-size: 10px;" onclick="fetchGeoLocation()">Atualizar</button>
+    </div>
+
+    <div class="elaium-window">
+      <div class="elaium-window-header">
+        <div class="window-title">
+          <span>🪟</span> <span data-i18n="windowTitle">Elaium Meteorological Center</span>
+        </div>
+        <div class="window-controls">
+          <div class="window-control-btn btn-minimize"></div>
+          <div class="window-control-btn btn-maximize"></div>
+          <div class="window-control-btn btn-close"></div>
+        </div>
+      </div>
+
+      <div class="elaium-window-body">
+        <div class="hero-grid">
+          
+          <!-- Location & Primary Temp -->
+          <div class="location-info">
+            <span class="country-tag" id="countryTag">BR — CEARÁ</span>
+            <h1 class="city-name" id="cityName">Fortaleza</h1>
+            
+            <div class="temp-large-box">
+              <div class="weather-orb-icon" id="weatherOrb">☀️</div>
+              <div>
+                <div class="temp-value" id="mainTemp">--°</div>
+                <div class="weather-desc" id="weatherDesc">Carregando clima...</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Key Metrics Grid -->
+          <div class="metrics-grid">
+            <div class="metric-card">
+              <div class="metric-icon">🌡</div>
+              <div class="metric-details">
+                <span class="metric-label" data-i18n="lblFeelsLike">Sensação</span>
+                <span class="metric-val" id="valFeels">--°</span>
+              </div>
+            </div>
+
+            <div class="metric-card">
+              <div class="metric-icon">💧</div>
+              <div class="metric-details">
+                <span class="metric-label" data-i18n="lblHumidity">Umidade</span>
+                <span class="metric-val" id="valHumidity">--%</span>
+              </div>
+            </div>
+
+            <div class="metric-card">
+              <div class="metric-icon">💨</div>
+              <div class="metric-details">
+                <span class="metric-label" data-i18n="lblWind">Vento</span>
+                <span class="metric-val" id="valWind">-- km/h</span>
+              </div>
+            </div>
+
+            <div class="metric-card">
+              <div class="metric-icon">☀️</div>
+              <div class="metric-details">
+                <span class="metric-label" data-i18n="lblUv">Índice UV</span>
+                <span class="metric-val" id="valUv">--</span>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <div class="dash-grid">
+      
+      <!-- Hourly Carousel & Daily List -->
+      <div style="display: flex; flex-direction: column; gap: 20px;">
+        
+        <!-- Hourly Carousel -->
+        <div class="elaium-card">
+          <div class="card-header-title">
+            <span>⏱</span> <span data-i18n="titleHourly">Previsão Hora a Hora</span>
+          </div>
+          <div class="hourly-scroll" id="hourlyCarousel">
+            <!-- Dynamic Hourly Items -->
+          </div>
+        </div>
+
+        <!-- Daily Forecast -->
+        <div class="elaium-card">
+          <div class="card-header-title">
+            <span>📅</span> <span data-i18n="titleDaily">Previsão para 5 Dias</span>
+          </div>
+          <div class="daily-list" id="dailyList">
+            <!-- Dynamic Daily Items -->
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Sidebar: Donuts & Ambience Player -->
+      <div style="display: flex; flex-direction: column; gap: 20px;">
+        
+        <!-- Donut Widgets Card -->
+        <div class="elaium-card">
+          <div class="card-header-title">
+            <span>📊</span> <span data-i18n="titleIndicators">Indicadores Aero</span>
+          </div>
+          
+          <div class="donuts-wrapper">
+            <!-- SVG Gradient Definition -->
+            <svg style="width:0; height:0; position:absolute;">
+              <defs>
+                <linearGradient id="donutGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                  <stop offset="0%" stop-color="#00e5ff" />
+                  <stop offset="100%" stop-color="#0055b3" />
+                </linearGradient>
+              </defs>
+            </svg>
+
+            <!-- Donut 1: Humidity -->
+            <div class="donut-card">
+              <svg class="donut-svg" viewBox="0 0 36 36">
+                <path class="donut-bg" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"/>
+                <path class="donut-fill" id="donutHumidity" stroke-dasharray="0, 100" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"/>
+              </svg>
+              <span class="donut-label" data-i18n="lblHumidity">Umidade</span>
+            </div>
+
+            <!-- Donut 2: UV Index -->
+            <div class="donut-card">
+              <svg class="donut-svg" viewBox="0 0 36 36">
+                <path class="donut-bg" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"/>
+                <path class="donut-fill" id="donutUv" stroke-dasharray="0, 100" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"/>
+              </svg>
+              <span class="donut-label" data-i18n="lblUv">Índice UV</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="soundscape-card">
+          <div class="card-header-title">
+            <span>🎧</span> <span data-i18n="titleAmbience">Elaium Soundscape</span>
+          </div>
+          <p style="font-size: 11px; color: #003865;" data-i18n="descAmbience">Sintetizador de áudio ambiente em tempo real:</p>
+          
+          <div class="soundscape-controls">
+            <button class="elaium-btn" id="soundToggleBtn" onclick="toggleAmbienceSound()">▶ Sound</button>
+            <input type="range" class="volume-slider" min="0" max="1" step="0.05" value="0.3" oninput="setAmbienceVolume(this.value)">
+          </div>
+
+          <div class="sound-btn-group" style="margin-top: 10px;">
+            <button class="pill-btn active" id="sndRain" onclick="setSoundType('rain')">🌧 Chuva</button>
+            <button class="pill-btn" id="sndWind" onclick="setSoundType('wind')">💨 Vento</button>
+            <button class="pill-btn" id="sndWaves" onclick="setSoundType('waves')">🌊 Ondas</button>
+          </div>
+
+          <canvas id="audioVisualizer"></canvas>
+        </div>
+
+      </div>
+
+    </div>
+
+  </div>
+    <script src="translate.js"></script>
+    <script src="weather.js"></script>
+    <script src="codes.js"></script>
+    <script src="audio.js"></script>
+</body>
+</html>
